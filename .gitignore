@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+
+# Secrets / env
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node / Next
+**/node_modules/
+**/.next/
+**/out/
+**/.turbo/
+**/.vercel/
+**/dist/
+**/build/
+
+# TypeScript
+**/*.tsbuildinfo
+
+# Terraform (if you use it in infra)
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfvars
+**/crash.log
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+
+# CDK (if you use it)
+**/cdk.out/
