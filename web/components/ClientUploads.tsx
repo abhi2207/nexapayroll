@@ -6,7 +6,7 @@ import { Button } from "@/components/Button";
 
 type UploadItem = { key: string; size: number; lastModified: string };
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 async function getAccessToken(): Promise<string> {
   const session = await fetchAuthSession();

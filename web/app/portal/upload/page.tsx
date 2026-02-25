@@ -2,11 +2,31 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
-import { configureAmplify } from "@/lib/amplify";
 import { Button } from "@/components/Button";
 import { SectionHeading } from "@/components/SectionHeading";
 
-type UploadItem = { key: string; size: number; lastModified: string };
+type UploadItem = {
+  key: string;
+  size: number;
+  lastModified: string;
+  filename?: string;
+  year?: string;
+  month?: string;
+};
+
+function displayFilenameFromKey(key: string) {
+  const last = key.split("/").pop() || key;
+  const dash = last.indexOf("-");
+  // Our uploader prefixes UUID-<originalFilename>
+  if (dash > 0) {
+    const prefix = last.slice(0, dash);
+    // very loose UUID-ish check
+    if (prefix.length >= 8 && /[0-9a-fA-F]/.test(prefix)) {
+      return last.slice(dash + 1);
+    }
+  }
+  return last;
+}
 
 async function authHeader() {
   const session = await fetchAuthSession();
@@ -21,13 +41,13 @@ export default function PortalUploadPage() {
 
   const [me, setMe] = useState("");
   const [items, setItems] = useState<UploadItem[]>([]);
+  const [year, setYear] = useState<string>("");
+  const [month, setMonth] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    configureAmplify();
-
     loadMe();
     loadUploads().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,9 +66,9 @@ export default function PortalUploadPage() {
     setErr("");
     setMsg("");
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (!baseUrl) {
-      setErr("Missing NEXT_PUBLIC_API_URL in .env.local");
+      setErr("Missing NEXT_PUBLIC_API_BASE_URL in .env.local");
       return;
     }
 
@@ -60,7 +80,21 @@ export default function PortalUploadPage() {
       return;
     }
 
-    setItems(out.items || []);
+    const next: UploadItem[] = out.items || [];
+    setItems(next);
+
+    // Default year/month selection to latest available
+    const years = Array.from(new Set(next.map((i) => i.year).filter(Boolean))) as string[];
+    years.sort((a, b) => (a < b ? 1 : -1));
+    const defaultYear = years[0] || "";
+    const months = Array.from(
+      new Set(next.filter((i) => i.year === defaultYear).map((i) => i.month).filter(Boolean))
+    ) as string[];
+    months.sort((a, b) => (a < b ? 1 : -1));
+    const defaultMonth = months[0] || "";
+
+    setYear((y) => y || defaultYear);
+    setMonth((m) => m || defaultMonth);
   }
 
   function openPicker() {
@@ -78,8 +112,8 @@ export default function PortalUploadPage() {
     setMsg("");
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!baseUrl) throw new Error("Missing NEXT_PUBLIC_API_URL in .env.local");
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!baseUrl) throw new Error("Missing NEXT_PUBLIC_API_BASE_URL in .env.local");
 
       const headers = { "content-type": "application/json", ...(await authHeader()) };
 
@@ -121,8 +155,8 @@ export default function PortalUploadPage() {
       setErr("");
       setMsg("");
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!baseUrl) throw new Error("Missing NEXT_PUBLIC_API_URL in .env.local");
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!baseUrl) throw new Error("Missing NEXT_PUBLIC_API_BASE_URL in .env.local");
 
       const headers = await authHeader();
       const res = await fetch(`${baseUrl}/download-url?key=${encodeURIComponent(key)}`, {
@@ -184,24 +218,72 @@ export default function PortalUploadPage() {
                 {items.length === 0 ? (
                   <div className="text-sm text-slate-600">No uploads yet.</div>
                 ) : (
-                  <ul className="space-y-2">
-                    {items.map((it) => (
-                      <li
-                        key={it.key}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3"
+                  <>
+                    <div className="mb-4 flex flex-wrap items-center gap-3">
+                      <div className="text-sm text-slate-600">Browse:</div>
+
+                      <select
+                        className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                        value={year}
+                        onChange={(e) => {
+                          const y = e.target.value;
+                          setYear(y);
+                          const months = Array.from(
+                            new Set(items.filter((i) => i.year === y).map((i) => i.month).filter(Boolean))
+                          ) as string[];
+                          months.sort((a, b) => (a < b ? 1 : -1));
+                          setMonth(months[0] || "");
+                        }}
                       >
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-medium">{it.key.split("/").pop()}</div>
-                          <div className="text-xs text-slate-600">
-                            {(it.size / 1024).toFixed(1)} KB • {new Date(it.lastModified).toLocaleString()}
-                          </div>
-                        </div>
-                        <Button variant="secondary" onClick={() => download(it.key)}>
-                          Download
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
+                        {Array.from(new Set(items.map((i) => i.year).filter(Boolean)))
+                          .sort((a, b) => ((a as string) < (b as string) ? 1 : -1))
+                          .map((y) => (
+                            <option key={y as string} value={y as string}>
+                              {y as string}
+                            </option>
+                          ))}
+                      </select>
+
+                      <select
+                        className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                        value={month}
+                        onChange={(e) => setMonth(e.target.value)}
+                      >
+                        {Array.from(
+                          new Set(items.filter((i) => i.year === year).map((i) => i.month).filter(Boolean))
+                        )
+                          .sort((a, b) => ((a as string) < (b as string) ? 1 : -1))
+                          .map((m) => (
+                            <option key={m as string} value={m as string}>
+                              {m as string}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    <ul className="space-y-2">
+                      {items
+                        .filter((it) => (!year || it.year === year) && (!month || it.month === month))
+                        .map((it) => (
+                          <li
+                            key={it.key}
+                            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3"
+                          >
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-medium">
+                                {it.filename || displayFilenameFromKey(it.key)}
+                              </div>
+                              <div className="text-xs text-slate-600">
+                                {(it.size / 1024).toFixed(1)} KB • {new Date(it.lastModified).toLocaleString()}
+                              </div>
+                            </div>
+                            <Button variant="secondary" onClick={() => download(it.key)}>
+                              Download
+                            </Button>
+                          </li>
+                        ))}
+                    </ul>
+                  </>
                 )}
               </div>
             </div>

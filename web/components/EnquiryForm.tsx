@@ -7,10 +7,12 @@ type State = "idle" | "submitting" | "sent";
 
 export function EnquiryForm() {
   const [state, setState] = useState<State>("idle");
+  const [error, setError] = useState<string>("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setState("submitting");
+    setError("");
 
     const form = new FormData(e.currentTarget);
     const payload = {
@@ -22,10 +24,10 @@ export function EnquiryForm() {
       sourcePage: typeof window !== "undefined" ? window.location.href : "",
     };
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
     if (!baseUrl) {
       setState("idle");
-      alert("Missing NEXT_PUBLIC_API_BASE_URL in .env.local");
+      setError("Contact form is not configured yet (missing NEXT_PUBLIC_API_BASE_URL).");
       return;
     }
 
@@ -38,7 +40,7 @@ export function EnquiryForm() {
     if (!res.ok) {
       setState("idle");
       const txt = await res.text().catch(() => "");
-      alert(`Submit failed (${res.status}). ${txt}`);
+      setError(`Submit failed (${res.status}). ${txt}`);
       return;
     }
 
@@ -70,7 +72,7 @@ export function EnquiryForm() {
         <Button type="submit" disabled={state !== "idle"}>
           {state === "idle" ? "Submit" : state === "submitting" ? "Submitting…" : "Sent ✓"}
         </Button>
-        {state === "sent" ? <span className="text-sm text-slate-600">Thanks — we’ll respond during support hours.</span> : null}
+        {error ? <span className="text-sm text-red-600">{error}</span> : state === "sent" ? <span className="text-sm text-slate-600">Thanks — we’ll respond during support hours.</span> : null}
       </div>
     </form>
   );

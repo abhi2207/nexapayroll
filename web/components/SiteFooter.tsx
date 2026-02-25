@@ -10,7 +10,7 @@ export function SiteFooter() {
             <p className="mt-2 text-sm leading-6 text-slate-600">New Delhi • Payroll & Compliance Support</p>
             <p className="mt-3 text-sm text-slate-600">
               Phone: <span className="font-semibold">+91 73900 55759</span><br />
-              Email: <span className="font-semibold">support@nexapayroll.com</span><br />
+              Email: <span className="font-semibold">payrollnexa@nexapayroll.com</span><br />
               Hours: <span className="font-semibold">Mon–Sat, 9am–6pm</span>
             </p>
           </div>

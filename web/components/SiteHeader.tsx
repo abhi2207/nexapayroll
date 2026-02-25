@@ -1,17 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getCurrentUser, signOut } from "aws-amplify/auth";
 import { Button } from "./Button";
+import { ChevronDownIcon } from "./Icons";
 
-const nav = [
-  { href: "/portal/", label: "Portal" },
-  { href: "/services/", label: "Services" },
-  { href: "/epf/", label: "EPF" },
-  { href: "/about/", label: "About" },
+const topNav = [
+  { href: "/#features", label: "Why choose us?" },
+  { href: "/about/", label: "About us" },
   { href: "/contact/", label: "Contact" },
+];
+
+const servicesNav = [
+  { href: "/services/", label: "Payroll Services" },
+  { href: "/epf/", label: "EPF / ESI Support" },
+  { href: "/portal/", label: "Client Portal" },
 ];
 
 export function SiteHeader() {
@@ -19,6 +24,9 @@ export function SiteHeader() {
   const [checking, setChecking] = useState(true);
   const [isAuthed, setIsAuthed] = useState(false);
   const [userLabel, setUserLabel] = useState<string>("");
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const closeTimer = useRef<number | null>(null);
+
 
   const refreshAuth = async () => {
     setChecking(true);
@@ -65,13 +73,51 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">N</span>
-          <span>Nexa Payroll</span>
+        <Link href="/" className="flex items-center gap-3 font-extrabold tracking-tight">
+          <img src="/assets/logo-mark.png" alt="NexaPayroll" className="h-9 w-9 rounded-md object-cover" />
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
-          {nav.map((i) => (
+        <nav className="hidden items-center gap-7 md:flex">
+          <div
+            className="relative"
+            onMouseEnter={() => {
+              if (closeTimer.current) window.clearTimeout(closeTimer.current);
+              setServicesOpen(true);
+            }}
+            onMouseLeave={() => {
+              if (closeTimer.current) window.clearTimeout(closeTimer.current);
+              closeTimer.current = window.setTimeout(() => setServicesOpen(false), 650);
+            }}
+          >
+            <button
+              type="button"
+              className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
+              onClick={() => setServicesOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={servicesOpen}
+            >
+              Services <ChevronDownIcon className="h-4 w-4" />
+            </button>
+
+            <div
+              className={`absolute left-0 top-full mt-1 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-soft transition ${
+                servicesOpen ? "opacity-100 visible" : "opacity-0 invisible"
+              }`}
+            >
+              {servicesNav.map((i) => (
+                <Link
+                  key={i.href}
+                  href={i.href}
+                  className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                  onClick={() => setServicesOpen(false)}
+                >
+                  {i.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {topNav.map((i) => (
             <Link key={i.href} href={i.href} className="text-sm font-medium text-slate-700 hover:text-slate-900">
               {i.label}
             </Link>
@@ -79,11 +125,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button href="/contact/" variant="secondary" className="hidden sm:inline-flex">
-            Contact Us
-          </Button>
-
-          {!checking && isAuthed && (
+{!checking && isAuthed && (
             <>
               <span className="hidden md:inline text-sm text-slate-600 max-w-[240px] truncate">
                 {userLabel}
@@ -99,10 +141,7 @@ export function SiteHeader() {
 
           {!checking && !isAuthed && (
             <>
-              <Button href="/signup/" variant="secondary" className="hidden sm:inline-flex">
-                Sign up
-              </Button>
-              <Button href="/login/" variant="primary">
+              <Button href="/login/" variant="secondary" className="hidden sm:inline-flex">
                 Login
               </Button>
             </>

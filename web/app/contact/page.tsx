@@ -21,7 +21,9 @@ export default function ContactPage() {
               <div>Support hours: <span className="font-semibold">{contact.hours}</span></div>
               <div>Location: <span className="font-semibold">{contact.location}</span></div>
             </div>
-            <div className="mt-6 text-sm leading-6 text-slate-600">{contactPage.note}</div>
+            {contactPage.note ? (
+              <div className="mt-6 text-sm leading-6 text-slate-600">{contactPage.note}</div>
+            ) : null}
           </div>
 
           <EnquiryForm />

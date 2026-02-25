@@ -28,7 +28,27 @@ def lambda_handler(event, context):
         r = s3.list_objects_v2(**kwargs)
 
         for o in r.get("Contents", []):
-            items.append({"key": o["Key"], "size": o["Size"], "lastModified": o["LastModified"].isoformat()})
+            key = o["Key"]
+            if key.endswith("/"):
+                continue
+
+            # Expected:
+            # clients/clientId=<id>/YYYY/MM/<filename>
+            parts = key.split("/")
+            filename = parts[-1] if parts else key
+            year = parts[-3] if len(parts) >= 3 else None
+            month = parts[-2] if len(parts) >= 2 else None
+
+            items.append(
+                {
+                    "key": key,
+                    "filename": filename,
+                    "year": year,
+                    "month": month,
+                    "size": o["Size"],
+                    "lastModified": o["LastModified"].isoformat(),
+                }
+            )
 
         if r.get("IsTruncated"):
             token = r.get("NextContinuationToken")

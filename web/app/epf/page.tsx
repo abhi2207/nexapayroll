@@ -16,10 +16,16 @@ export default function EPFPage() {
       <section className="py-16">
         <div className="container grid gap-10 lg:grid-cols-2">
           <div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
-              <div className="text-sm font-semibold">{epf.whatIsTitle}</div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{epf.whatIsDesc}</p>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{epf.lifecycle}</p>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
+                <div className="text-sm font-semibold">{epf.applicabilityEPFTitle}</div>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{epf.applicabilityEPFDesc}</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
+                <div className="text-sm font-semibold">{epf.applicabilityESITitle}</div>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{epf.applicabilityESIDesc}</p>
+              </div>
             </div>
 
             <div className="mt-8 grid gap-6 md:grid-cols-3">
@@ -33,8 +39,11 @@ export default function EPFPage() {
             </div>
 
             <div className="mt-10">
-              <SectionHeading kicker="Our services" title="EPF audits, compliance, withdrawals & inspections"
-                desc="We provide comprehensive EPF solutions that simplify registration, compliance, withdrawals, and inspections." />
+              <SectionHeading
+                kicker="Our services"
+                title="EPF/ESI audits, compliance, withdrawals & inspections"
+                desc="We provide comprehensive EPF/ESI solutions that simplify registration, compliance, withdrawals, and inspections."
+              />
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
                 {epf.epfServices.map((s) => (
                   <Card key={s.title} title={s.title}>{s.desc}</Card>
@@ -43,8 +52,11 @@ export default function EPFPage() {
             </div>
 
             <div className="mt-10">
-              <SectionHeading kicker="Why choose us" title="Reliable, compliant, hassle‑free support"
-                desc="Trusted EPF consultancy delivering reliable guidance and smooth execution." />
+              <SectionHeading
+                kicker="Why choose us"
+                title="Reliable, compliant, hassle‑free support"
+                desc="Trusted EPF/ESI consultancy delivering reliable guidance and smooth execution."
+              />
               <div className="mt-8 grid gap-6 md:grid-cols-3">
                 {epf.whyChooseUs.map((w) => (
                   <Card key={w.title} title={w.title}>{w.desc}</Card>
