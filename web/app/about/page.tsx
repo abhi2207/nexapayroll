@@ -36,14 +36,13 @@ export default function AboutPage() {
             {/* Management */}
             <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-soft">
               <div className="grid gap-6 md:grid-cols-[220px,1fr] md:items-start">
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 aspect-[4/5] flex items-end justify-center">
                   <img
                     src="/assets/puneet-jain.jpg"
                     alt="Puneet Jain - Founder & Managing Director"
-                    className="h-56 w-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
-
                 <div>
                   <div className="text-sm font-semibold text-slate-500">Management</div>
                   <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">

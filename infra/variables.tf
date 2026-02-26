@@ -11,7 +11,7 @@ variable "project" {
 variable "from_email" {
   description = "Verified SES sender identity (recommended: payollnexa@gmail.co)"
   type        = string
-  default     = "supportnexa@gmail.com"
+  default     = "no-reply@nexapayroll.com"
 }
 
 variable "to_email" {
